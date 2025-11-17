@@ -19,7 +19,7 @@ class UserSeeder extends Seeder
             'is_active' => true,
         ]);
 
-        for ($i = 0; $i < 15; $i++) {
+        for ($i = 0; $i < 5; $i++) {
             // Create regular user
             User::create([
                 'name' => 'User ' . ($i + 1),

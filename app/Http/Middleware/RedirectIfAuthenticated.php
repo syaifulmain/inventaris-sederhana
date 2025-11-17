@@ -18,7 +18,7 @@ class RedirectIfAuthenticated
 
                 return redirect($user->role === 'admin'
                     ? route('admin.users')
-                    : route('user.dashboard'));
+                    : route('dashboard'));
             }
         }
 
