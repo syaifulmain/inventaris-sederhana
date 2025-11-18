@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\Admin\UserController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\Admin\SupplierController;
+use App\Http\Controllers\Api\StockTransactionController;
 
 // Public routes
 Route::post('/login', [AuthController::class, 'login']);
@@ -28,6 +29,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Supplier management
         Route::apiResource('suppliers', SupplierController::class);
+
+        // StockTransaction management
+        Route::apiResource('stock-transactions', StockTransactionController::class);
     });
 });
 // Route::prefix('admin')->group(function () {
