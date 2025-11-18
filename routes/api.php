@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\Admin\UserController;
+use App\Http\Controllers\Api\ProductController;
 
 // Public routes
 Route::post('/login', [AuthController::class, 'login']);
@@ -17,5 +18,10 @@ Route::middleware('auth:sanctum')->group(function () {
     // Admin routes
     Route::middleware('admin')->prefix('admin')->group(function () {
         Route::apiResource('users', UserController::class);
+        Route::apiResource('products', ProductController::class);
     });
 });
+// Route::prefix('admin')->group(function () {
+//     Route::apiResource('users', UserController::class);
+//     Route::apiResource('products', ProductController::class);
+// });
