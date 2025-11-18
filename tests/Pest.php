@@ -7,6 +7,11 @@ uses(
     RefreshDatabase::class,
 )->in('Feature');
 
+uses(
+    Tests\TestCase::class,
+    RefreshDatabase::class,
+)->in('e2e');
+
 expect()->extend('toBeOne', function () {
     return $this->toBe(1);
 });
