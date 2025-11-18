@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\Admin\UserController;
-use App\Http\Controllers\Admin\SupplierController;
+use App\Http\Controllers\Api\Admin\SupplierController; 
 
 // Public routes
 Route::post('/login', [AuthController::class, 'login']);
