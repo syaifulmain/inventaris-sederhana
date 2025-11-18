@@ -24,13 +24,13 @@ jobs:
           tools: composer:v2
           coverage: xdebug
 
+      - name: Install Composer Dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
       - name: Copy .env
         run: |
           cp .env.ci .env
           php artisan key:generate
-
-      - name: Install Composer Dependencies
-        run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
