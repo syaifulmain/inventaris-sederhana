@@ -1,19 +1,27 @@
 <?php
 
-namespace App\Http\Controllers\Api\Admin;
+namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Supplier;
 use Illuminate\Http\Request;
+use App\Services\SupplierService;
 
 class SupplierController extends Controller
 {
+    protected SupplierService $supplierService;
+
+    public function __construct(SupplierService $supplierService)
+    {
+        $this->supplierService = $supplierService;
+    }
+
     /**
      * List all suppliers
      */
     public function index()
     {
-        $suppliers = Supplier::all();
+        $suppliers = $this->supplierService->all();
 
         return response()->json([
             'status'  => 200,
@@ -33,7 +41,7 @@ class SupplierController extends Controller
             'address' => 'required|string',
         ]);
 
-        $supplier = Supplier::create($data);
+        $supplier = $this->supplierService->create($data);
 
         return response()->json([
             'status'  => 201,
@@ -45,8 +53,17 @@ class SupplierController extends Controller
     /**
      * Show supplier by ID
      */
-    public function show(Supplier $supplier)
+    public function show($id)
     {
+        $supplier = $this->supplierService->find($id);
+
+        if (!$supplier) {
+            return response()->json([
+                'status'  => 404,
+                'message' => 'Supplier tidak ditemukan',
+            ], 404);
+        }
+
         return response()->json([
             'status'  => 200,
             'message' => 'Detail supplier berhasil diambil',
@@ -57,15 +74,24 @@ class SupplierController extends Controller
     /**
      * Update supplier
      */
-    public function update(Request $request, Supplier $supplier)
+    public function update(Request $request, $id)
     {
+        $supplier = $this->supplierService->find($id);
+
+        if (!$supplier) {
+            return response()->json([
+                'status'  => 404,
+                'message' => 'Supplier tidak ditemukan',
+            ], 404);
+        }
+
         $data = $request->validate([
             'code'    => 'sometimes|required|string|max:50|unique:suppliers,code,' . $supplier->id,
             'name'    => 'sometimes|required|string|max:255',
             'address' => 'sometimes|required|string',
         ]);
 
-        $supplier->update($data);
+        $supplier = $this->supplierService->update($supplier, $data);
 
         return response()->json([
             'status'  => 200,
@@ -77,9 +103,18 @@ class SupplierController extends Controller
     /**
      * Delete supplier
      */
-    public function destroy(Supplier $supplier)
+    public function destroy($id)
     {
-        $supplier->delete();
+        $supplier = $this->supplierService->find($id);
+
+        if (!$supplier) {
+            return response()->json([
+                'status'  => 404,
+                'message' => 'Supplier tidak ditemukan',
+            ], 404);
+        }
+
+        $this->supplierService->delete($supplier);
 
         return response()->json([
             'status'  => 200,

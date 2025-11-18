@@ -18,8 +18,8 @@ beforeEach(function () {
 it('can create a supplier', function () {
     $payload = [
         'code' => 'SUP-' . fake()->unique()->numerify('###'),
-        'name' => 'PT. Naskleng 13',
-        'address' => 'Jl. Singaraja No. 123, Bali',
+        'name' => 'PT. Maju Jaya',
+        'address' => 'Jl. Sudirman No. 123, Jakarta Pusat',
     ];
 
     $response = $this->actingAs($this->admin, 'sanctum')
