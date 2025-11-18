@@ -18,7 +18,7 @@ class SupplierController extends Controller
         return response()->json([
             'status'  => 200,
             'message' => 'Daftar supplier berhasil diambil',
-            'data'    => $suppliers
+            'data'    => $suppliers,
         ]);
     }
 
@@ -38,7 +38,7 @@ class SupplierController extends Controller
         return response()->json([
             'status'  => 201,
             'message' => 'Supplier berhasil ditambahkan',
-            'data'    => $supplier
+            'data'    => $supplier,
         ], 201);
     }
 
@@ -50,7 +50,7 @@ class SupplierController extends Controller
         return response()->json([
             'status'  => 200,
             'message' => 'Detail supplier berhasil diambil',
-            'data'    => $supplier
+            'data'    => $supplier,
         ]);
     }
 
@@ -69,8 +69,8 @@ class SupplierController extends Controller
 
         return response()->json([
             'status'  => 200,
-            'message' => 'Supplier berhasil diperbarui',
-            'data'    => $supplier
+            'message' => 'Supplier berhasil diupdate',
+            'data'    => $supplier,
         ]);
     }
 
@@ -83,7 +83,7 @@ class SupplierController extends Controller
 
         return response()->json([
             'status'  => 200,
-            'message' => 'Supplier berhasil dihapus'
+            'message' => 'Supplier berhasil dihapus',
         ]);
     }
 }
