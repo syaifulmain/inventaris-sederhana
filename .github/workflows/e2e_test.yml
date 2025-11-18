@@ -1,4 +1,4 @@
-name: e2e Browser Tests
+name: e2e Tests
 
 on:
   push:
@@ -12,29 +12,6 @@ jobs:
   ci:
     runs-on: ubuntu-latest
 
-    env:
-      APP_ENV: testing
-      APP_URL: http://127.0.0.1:8000
-      DB_CONNECTION: mysql
-      DB_HOST: 127.0.0.1
-      DB_PORT: 3306
-      DB_DATABASE: testing
-      DB_USERNAME: root
-      DB_PASSWORD: root
-      CACHE_DRIVER: array
-      SESSION_DRIVER: array
-      QUEUE_CONNECTION: sync
-
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: testing
-        ports:
-          - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -43,27 +20,17 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: 8.4
-          extensions: mbstring, dom, fileinfo, mysql, pdo_mysql
+          extensions: mbstring, dom, fileinfo, sqlite3, pdo_sqlite
           tools: composer:v2
           coverage: xdebug
 
       - name: Copy .env
         run: |
-          cp .env.example .env
-          sed -i "s/DB_CONNECTION=.*/DB_CONNECTION=mysql/" .env
-          sed -i "s/DB_HOST=.*/DB_HOST=127.0.0.1/" .env
-          sed -i "s/DB_PORT=.*/DB_PORT=3306/" .env
-          sed -i "s/DB_DATABASE=.*/DB_DATABASE=testing/" .env
-          sed -i "s/DB_USERNAME=.*/DB_USERNAME=root/" .env
-          sed -i "s/DB_PASSWORD=.*/DB_PASSWORD=root/" .env
-          sed -i "s/CACHE_DRIVER=.*/CACHE_DRIVER=array/" .env
-          sed -i "s/SESSION_DRIVER=.*/SESSION_DRIVER=array/" .env
+          cp .env.ci .env
+          php artisan key:generate
 
       - name: Install Composer Dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
-
-      - name: Generate App Key
-        run: php artisan key:generate
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -77,28 +44,31 @@ jobs:
       - name: Build Assets
         run: npm run build
 
-      - name: Install Playwright Browsers
-        run: npx playwright install chromium --with-deps
+      - name: Install Playwright
+        run: npx playwright install --with-deps
 
-      - name: Wait for MySQL
-        run: |
-          until mysqladmin ping -h"127.0.0.1" -P"3306" -u"root" -p"root" --silent; do
-            echo "Waiting for MySQL..."
-            sleep 2
-          done
+      - name: Create SQLite Database
+        run: touch database/database.sqlite
 
       - name: Run Migrations
         run: php artisan migrate --force
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: database/database.sqlite
 
       - name: Seed Database
         run: php artisan db:seed --force
 
       - name: Start Laravel Server
         run: php artisan serve --host=127.0.0.1 --port=8000 &
+        env:
+          APP_ENV: testing
+          APP_URL: http://127.0.0.1:8000
 
       - name: Wait for Server
-        run: |
-          timeout 30 bash -c 'until curl -s http://127.0.0.1:8000 > /dev/null; do sleep 1; done'
+        run: sleep 5
 
       - name: Run Browser Tests
-        run: ./vendor/bin/pest --testsuite=E2E --bail --parallel
+        run: ./vendor/bin/pest --testsuite=E2E --bail
+        env:
+          APP_URL: http://127.0.0.1:8000
