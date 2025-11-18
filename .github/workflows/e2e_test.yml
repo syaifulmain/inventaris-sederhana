@@ -69,6 +69,6 @@ jobs:
         run: sleep 5
 
       - name: Run Browser Tests
-        run: ./vendor/bin/pest --testsuite=E2E --bail
+        run: ./vendor/bin/pest --testsuite=E2E --bail --parallel
         env:
           APP_URL: http://127.0.0.1:8000
