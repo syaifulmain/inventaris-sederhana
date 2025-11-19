@@ -4,12 +4,13 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Supplier;
-use Illuminate\Http\Request;
 use App\Services\SupplierService;
+use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class SupplierController extends Controller
 {
-    protected SupplierService $supplierService;
+    protected $supplierService;
 
     public function __construct(SupplierService $supplierService)
     {
@@ -17,41 +18,59 @@ class SupplierController extends Controller
     }
 
     /**
-     * List all suppliers
+     * List Supplier (Pagination)
      */
-    public function index()
+    public function index(Request $request)
     {
-        $suppliers = $this->supplierService->all();
+        $perPage = $request->get('per_page', 10);
+        $suppliers = Supplier::paginate($perPage);
 
         return response()->json([
-            'status'  => 200,
-            'message' => 'Daftar supplier berhasil diambil',
-            'data'    => $suppliers,
+            'status' => 200,
+            'message' => 'Data supplier berhasil diambil',
+            'data' => [
+                'data' => $suppliers->items(),
+                'current_page' => $suppliers->currentPage(),
+                'per_page' => $suppliers->perPage(),
+                'total' => $suppliers->total(),
+                'last_page' => $suppliers->lastPage(),
+            ],
+            'errors' => 'Unknown Type: null'
         ]);
     }
 
     /**
-     * Create new supplier
+     * Create Supplier
      */
     public function store(Request $request)
     {
-        $data = $request->validate([
-            'code'    => 'required|string|max:50|unique:suppliers,code',
-            'name'    => 'required|string|max:255',
-            'address' => 'required|string',
-        ]);
+        try {
+            $validated = $request->validate([
+                'code' => 'required|string|unique:suppliers,code',
+                'name' => 'required|string',
+                'address' => 'nullable|string'
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'status' => 422,
+                'message' => 'Validation Error',
+                'data' => 'Unknown Type: null',
+                'errors' => $e->errors()
+            ], 422);
+        }
 
-        $supplier = $this->supplierService->create($data);
+        $supplier = $this->supplierService->create($validated);
 
         return response()->json([
-            'status'  => 201,
+            'status' => 201,
             'message' => 'Supplier berhasil ditambahkan',
-            'data'    => $supplier,
+            'data' => $supplier,
+            'errors' => 'Unknown Type: null'
         ], 201);
     }
 
     /**
-     * Show supplier by ID
+     * Show Supplier by ID
      */
     public function show($id)
     {
@@ -59,20 +78,25 @@ class SupplierController extends Controller
 
         if (!$supplier) {
             return response()->json([
-                'status'  => 404,
-                'message' => 'Supplier tidak ditemukan',
-            ], 404);
+                'status' => 400,
+                'message' => 'Error',
+                'data' => 'Unknown Type: null',
+                'errors' => [
+                    'message' => 'Supplier tidak ditemukan'
+                ]
+            ], 400);
         }
 
         return response()->json([
-            'status'  => 200,
-            'message' => 'Detail supplier berhasil diambil',
-            'data'    => $supplier,
+            'status' => 200,
+            'message' => 'Data supplier berhasil diambil',
+            'data' => $supplier,
+            'errors' => 'Unknown Type: null'
         ]);
     }
 
     /**
-     * Update supplier
+     * Update Supplier
      */
     public function update(Request $request, $id)
     {
@@ -80,28 +104,42 @@ class SupplierController extends Controller
 
         if (!$supplier) {
             return response()->json([
-                'status'  => 404,
-                'message' => 'Supplier tidak ditemukan',
-            ], 404);
+                'status' => 400,
+                'message' => 'Error',
+                'data' => 'Unknown Type: null',
+                'errors' => [
+                    'message' => 'Supplier tidak ditemukan'
+                ]
+            ], 400);
         }
 
-        $data = $request->validate([
-            'code'    => 'sometimes|required|string|max:50|unique:suppliers,code,' . $supplier->id,
-            'name'    => 'sometimes|required|string|max:255',
-            'address' => 'sometimes|required|string',
-        ]);
+        try {
+            $validated = $request->validate([
+                'code' => 'nullable|string|unique:suppliers,code,' . $id,
+                'name' => 'nullable|string',
+                'address' => 'nullable|string'
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'status' => 422,
+                'message' => 'Validation Error',
+                'data' => 'Unknown Type: null',
+                'errors' => $e->errors()
+            ], 422);
+        }
 
-        $supplier = $this->supplierService->update($supplier, $data);
+        $updated = $this->supplierService->update($supplier, $validated);
 
         return response()->json([
-            'status'  => 200,
+            'status' => 200,
             'message' => 'Supplier berhasil diupdate',
-            'data'    => $supplier,
+            'data' => $updated,
+            'errors' => 'Unknown Type: null'
         ]);
     }
 
     /**
-     * Delete supplier
+     * Delete Supplier
      */
     public function destroy($id)
     {
@@ -109,16 +147,22 @@ class SupplierController extends Controller
 
         if (!$supplier) {
             return response()->json([
-                'status'  => 404,
-                'message' => 'Supplier tidak ditemukan',
-            ], 404);
+                'status' => 400,
+                'message' => 'Error',
+                'data' => 'Unknown Type: null',
+                'errors' => [
+                    'message' => 'Supplier tidak ditemukan'
+                ]
+            ], 400);
         }
 
         $this->supplierService->delete($supplier);
 
         return response()->json([
-            'status'  => 200,
+            'status' => 200,
             'message' => 'Supplier berhasil dihapus',
+            'data' => 'Unknown Type: null',
+            'errors' => 'Unknown Type: null'
         ]);
     }
 }

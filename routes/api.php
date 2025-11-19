@@ -4,34 +4,28 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\Admin\UserController;
 use App\Http\Controllers\Api\ProductController;
-use App\Http\Controllers\Api\SupplierController; 
-use App\Http\Controllers\Api\StockTransactionController;
+use App\Http\Controllers\Api\SupplierController;
 
 // Public routes
 Route::post('/login', [AuthController::class, 'login']);
 
-// Protected routes (authenticated users)
+// Protected routes
 Route::middleware('auth:sanctum')->group(function () {
-
+    
     // Auth routes
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/profile', [AuthController::class, 'profile']);
     Route::put('/profile', [AuthController::class, 'updateProfile']);
 
+    // Menu routers
+    Route::apiResource('products', ProductController::class);
+
+    // Supplier management
+    Route::apiResource('suppliers', SupplierController::class); 
+
     // Admin routes
     Route::middleware('admin')->prefix('admin')->group(function () {
-
-        // User management
         Route::apiResource('users', UserController::class);
-
-        // Product management
-        Route::apiResource('products', ProductController::class);
-
-        // Supplier management
-        Route::apiResource('suppliers', SupplierController::class);
-
-        // StockTransaction management
-        Route::apiResource('stock-transactions', StockTransactionController::class);
     });
 });
 
