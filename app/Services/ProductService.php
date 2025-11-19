@@ -24,8 +24,8 @@ class ProductService extends BaseService
 
     protected function applyFilters($query, array $filters)
     {
-        if (isset($filters['category']) && $filters['category'] !== '') {
-            $query->where('category', $filters['category']);
+        if (isset($filters['category_id']) && $filters['category_id'] !== '') {
+            $query->where('category_id', $filters['category_id']);
         }
 
         if (isset($filters['search'])) {
