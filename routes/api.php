@@ -15,10 +15,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/profile', [AuthController::class, 'profile']);
     Route::put('/profile', [AuthController::class, 'updateProfile']);
 
+    // Menu routers
+    Route::apiResource('products', ProductController::class);
+
     // Admin routes
     Route::middleware('admin')->prefix('admin')->group(function () {
         Route::apiResource('users', UserController::class);
-        Route::apiResource('products', ProductController::class);
     });
 });
 // Route::prefix('admin')->group(function () {
