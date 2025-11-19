@@ -18,20 +18,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/profile', [AuthController::class, 'profile']);
     Route::put('/profile', [AuthController::class, 'updateProfile']);
 
+    // Menu routers
+    Route::apiResource('products', ProductController::class);
+    Route::apiResource('stock-transactions', StockTransactionController::class);
+
+
     // Admin routes
     Route::middleware('admin')->prefix('admin')->group(function () {
 
         // User management
         Route::apiResource('users', UserController::class);
-
-        // Product management
-        Route::apiResource('products', ProductController::class);
-
-        // Supplier management
-        Route::apiResource('suppliers', SupplierController::class);
-
-        // StockTransaction management
-        Route::apiResource('stock-transactions', StockTransactionController::class);
     });
 });
 // Route::prefix('admin')->group(function () {

@@ -24,7 +24,7 @@ class ProductController extends Controller
     public function index(Request $request)
     {
         try {
-            $filters = $request->only(['search', 'category']);
+            $filters = $request->only(['search', 'category_id']);
             $perPage = $request->input('per_page', 10);
 
             $products = $this->productService->getPaginated($filters, $perPage);
