@@ -13,6 +13,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->singleton(\App\Services\AuthService::class);
         $this->app->singleton(\App\Services\UserService::class);
+        $this->app->singleton(\App\Services\ProductService::class);
     }
 
     /**
