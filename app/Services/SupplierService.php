@@ -7,17 +7,27 @@ use App\Models\Supplier;
 class SupplierService
 {
     /**
-     * Get all suppliers
+     * List suppliers with optional search and pagination
      */
-    public function all()
+    public function list(?string $search = null, int $perPage = 10, int $page = 1)
     {
-        return Supplier::all();
+        $query = Supplier::query();
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('code', 'like', "%$search%")
+                  ->orWhere('name', 'like', "%$search%")
+                  ->orWhere('address', 'like', "%$search%");
+            });
+        }
+
+        return $query->paginate($perPage, ['*'], 'page', $page);
     }
 
     /**
      * Create a new supplier
      */
-    public function create(array $data): Supplier
+    public function create(array $data)
     {
         return Supplier::create($data);
     }
@@ -25,7 +35,7 @@ class SupplierService
     /**
      * Find supplier by ID
      */
-    public function find(int $id): ?Supplier
+    public function find($id)
     {
         return Supplier::find($id);
     }
@@ -33,7 +43,7 @@ class SupplierService
     /**
      * Update supplier
      */
-    public function update(Supplier $supplier, array $data): Supplier
+    public function update(Supplier $supplier, array $data)
     {
         $supplier->update($data);
         return $supplier;
@@ -42,7 +52,7 @@ class SupplierService
     /**
      * Delete supplier
      */
-    public function delete(Supplier $supplier): void
+    public function delete(Supplier $supplier)
     {
         $supplier->delete();
     }

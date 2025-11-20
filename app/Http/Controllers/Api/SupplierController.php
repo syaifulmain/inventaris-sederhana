@@ -3,10 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Supplier;
+use App\Http\Requests\SupplierRequest;
 use App\Services\SupplierService;
 use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
 
 class SupplierController extends Controller
 {
@@ -18,12 +17,15 @@ class SupplierController extends Controller
     }
 
     /**
-     * List Supplier (Pagination)
+     * List suppliers (with pagination and search)
      */
     public function index(Request $request)
     {
-        $perPage = $request->get('per_page', 10);
-        $suppliers = Supplier::paginate($perPage);
+        $perPage = $request->query('per_page', 10);
+        $page = $request->query('page', 1);
+        $search = $request->query('search');
+
+        $suppliers = $this->supplierService->list($search, $perPage, $page);
 
         return response()->json([
             'status' => 200,
@@ -40,26 +42,11 @@ class SupplierController extends Controller
     }
 
     /**
-     * Create Supplier
+     * Create supplier
      */
-    public function store(Request $request)
+    public function store(SupplierRequest $request)
     {
-        try {
-            $validated = $request->validate([
-                'code' => 'required|string|unique:suppliers,code',
-                'name' => 'required|string',
-                'address' => 'nullable|string'
-            ]);
-        } catch (ValidationException $e) {
-            return response()->json([
-                'status' => 422,
-                'message' => 'Validation Error',
-                'data' => 'Unknown Type: null',
-                'errors' => $e->errors()
-            ], 422);
-        }
-
-        $supplier = $this->supplierService->create($validated);
+        $supplier = $this->supplierService->create($request->validated());
 
         return response()->json([
             'status' => 201,
@@ -70,7 +57,7 @@ class SupplierController extends Controller
     }
 
     /**
-     * Show Supplier by ID
+     * Get supplier by ID
      */
     public function show($id)
     {
@@ -84,7 +71,7 @@ class SupplierController extends Controller
                 'errors' => [
                     'message' => 'Supplier tidak ditemukan'
                 ]
-            ], 400);
+            ], 404);
         }
 
         return response()->json([
@@ -96,9 +83,9 @@ class SupplierController extends Controller
     }
 
     /**
-     * Update Supplier
+     * Update supplier
      */
-    public function update(Request $request, $id)
+    public function update(SupplierRequest $request, $id)
     {
         $supplier = $this->supplierService->find($id);
 
@@ -113,22 +100,7 @@ class SupplierController extends Controller
             ], 400);
         }
 
-        try {
-            $validated = $request->validate([
-                'code' => 'nullable|string|unique:suppliers,code,' . $id,
-                'name' => 'nullable|string',
-                'address' => 'nullable|string'
-            ]);
-        } catch (ValidationException $e) {
-            return response()->json([
-                'status' => 422,
-                'message' => 'Validation Error',
-                'data' => 'Unknown Type: null',
-                'errors' => $e->errors()
-            ], 422);
-        }
-
-        $updated = $this->supplierService->update($supplier, $validated);
+        $updated = $this->supplierService->update($supplier, $request->validated());
 
         return response()->json([
             'status' => 200,
@@ -139,7 +111,7 @@ class SupplierController extends Controller
     }
 
     /**
-     * Delete Supplier
+     * Delete supplier
      */
     public function destroy($id)
     {
@@ -153,7 +125,7 @@ class SupplierController extends Controller
                 'errors' => [
                     'message' => 'Supplier tidak ditemukan'
                 ]
-            ], 400);
+            ], 404);
         }
 
         $this->supplierService->delete($supplier);
