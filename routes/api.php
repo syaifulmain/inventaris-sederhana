@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\SupplierController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\Admin\UserController;
@@ -17,6 +18,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Menu routers
     Route::apiResource('products', ProductController::class);
+
+    // Supplier management
+    Route::apiResource('suppliers', SupplierController::class);
 
     // Admin routes
     Route::middleware('admin')->prefix('admin')->group(function () {
