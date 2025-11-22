@@ -21,9 +21,20 @@ class UpdateProductRequest extends FormRequest
             'code' => [
                 'sometimes',
                 'string',
+                'max:50',
                 Rule::unique('products')->ignore($productId)
             ],
-            'category_id' => 'sometimes|exists:categories,id',
+            'category_id' => 'sometimes|integer|exists:categories,id',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'code.unique' => 'Kode produk sudah digunakan',
+            'code.max' => 'Kode produk maksimal 50 karakter',
+            'category_id.exists' => 'Kategori tidak ditemukan',
+            'name.max' => 'Nama produk maksimal 255 karakter',
         ];
     }
 }
