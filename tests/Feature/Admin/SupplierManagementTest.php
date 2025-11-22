@@ -25,7 +25,6 @@ test('admin can list suppliers with pagination and search', function () {
         'address' => 'Jl. Thamrin No. 456, Jakarta Pusat',
     ]);
 
-    // List all
     $response = $this->actingAs($this->admin, 'sanctum')
         ->getJson('/api/suppliers');
 
@@ -37,7 +36,6 @@ test('admin can list suppliers with pagination and search', function () {
             'errors'
         ]);
 
-    // Search by name
     $search = $this->actingAs($this->admin, 'sanctum')
         ->getJson('/api/suppliers?search=Maju');
 
@@ -45,13 +43,11 @@ test('admin can list suppliers with pagination and search', function () {
     $suppliers = $search->json('data.data');
     expect(collect($suppliers)->where('name', 'PT. Maju Jaya')->count())->toBeGreaterThan(0);
 
-    // Search by code
     $searchCode = $this->actingAs($this->admin, 'sanctum')
         ->getJson('/api/suppliers?search=SUP-002');
     $searchCode->assertStatus(200);
     expect(collect($searchCode->json('data.data'))->where('code', 'SUP-002')->count())->toBeGreaterThan(0);
 
-    // Search by address
     $searchAddress = $this->actingAs($this->admin, 'sanctum')
         ->getJson('/api/suppliers?search=Thamrin');
     $searchAddress->assertStatus(200);
@@ -80,7 +76,7 @@ test('admin can create supplier', function () {
         ->assertJson([
             'status' => 201,
             'message' => 'Supplier berhasil ditambahkan',
-            'errors' => 'Unknown Type: null'
+            'errors' => null
         ]);
 
     $this->assertDatabaseHas('suppliers', ['code' => 'SUP-001']);
@@ -120,7 +116,7 @@ test('admin can get supplier by id', function () {
         ->assertJson([
             'status' => 200,
             'message' => 'Data supplier berhasil diambil',
-            'errors' => 'Unknown Type: null',
+            'errors' => null,
             'data' => [
                 'id' => $supplier->id,
                 'code' => 'SUP-001',
@@ -133,7 +129,13 @@ test('admin can get supplier by id', function () {
 test('admin cannot get non-existent supplier', function () {
     $response = $this->actingAs($this->admin, 'sanctum')
         ->getJson('/api/suppliers/99999');
-    $response->assertStatus(404);
+    $response->assertStatus(404)
+        ->assertJson([
+            'status' => 404,
+            'message' => 'Supplier tidak ditemukan',
+            'data' => null,
+            'errors' => null,
+        ]);
 });
 
 test('unauthenticated cannot get supplier by id', function () {
@@ -164,7 +166,7 @@ test('admin can update supplier', function () {
         ->assertJson([
             'status' => 200,
             'message' => 'Supplier berhasil diupdate',
-            'errors' => 'Unknown Type: null',
+            'errors' => null,
         ])
         ->assertJsonStructure([
             'status',
@@ -188,9 +190,6 @@ test('admin can update supplier', function () {
     ]);
 });
 
-/**
- * Admin cannot update non-existent supplier
- */
 test('admin cannot update non-existent supplier', function () {
     $payload = [
         'code' => 'SUP-999',
@@ -205,16 +204,11 @@ test('admin cannot update non-existent supplier', function () {
         ->assertJson([
             'status' => 400,
             'message' => 'Error',
-            'data' => 'Unknown Type: null',
-            'errors' => [
-                'message' => 'Supplier tidak ditemukan'
-            ]
+            'data' => null,
+            'errors' => ['message' => 'Supplier tidak ditemukan'],
         ]);
 });
 
-/**
- * Unauthenticated user cannot update supplier
- */
 test('unauthenticated cannot update supplier', function () {
     $payload = [
         'code' => 'SUP-001-UPD',
@@ -244,8 +238,8 @@ test('admin can delete supplier', function () {
         ->assertJson([
             'status' => 200,
             'message' => 'Supplier berhasil dihapus',
-            'data' => 'Unknown Type: null',
-            'errors' => 'Unknown Type: null'
+            'data' => null,
+            'errors' => null
         ]);
 
     $this->assertDatabaseMissing('suppliers', ['id' => $supplier->id]);
@@ -254,7 +248,13 @@ test('admin can delete supplier', function () {
 test('admin cannot delete non-existent supplier', function () {
     $response = $this->actingAs($this->admin, 'sanctum')
         ->deleteJson('/api/suppliers/99999');
-    $response->assertStatus(404);
+    $response->assertStatus(404)
+        ->assertJson([
+            'status' => 404,
+            'message' => 'Supplier tidak ditemukan',
+            'data' => null,
+            'errors' => null,
+        ]);
 });
 
 test('unauthenticated cannot delete supplier', function () {
