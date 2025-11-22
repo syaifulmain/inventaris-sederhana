@@ -8,6 +8,8 @@ uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->admin = User::factory()->create(['role' => 'admin']);
+    // Tambahan seeder supplier
+    $this->seed(\Database\Seeders\SupplierSeeder::class); 
 });
 
 /**
