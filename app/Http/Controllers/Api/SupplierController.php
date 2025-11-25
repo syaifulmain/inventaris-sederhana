@@ -6,9 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\SupplierRequest;
 use App\Services\SupplierService;
 use Illuminate\Http\Request;
+use App\Traits\ApiResponseTrait;
 
 class SupplierController extends Controller
 {
+    use ApiResponseTrait;
+
     protected $supplierService;
 
     public function __construct(SupplierService $supplierService)
@@ -27,18 +30,15 @@ class SupplierController extends Controller
 
         $suppliers = $this->supplierService->list($search, $perPage, $page);
 
-        return response()->json([
-            'status' => 200,
-            'message' => 'Data supplier berhasil diambil',
-            'data' => [
-                'data' => $suppliers->items(),
-                'current_page' => $suppliers->currentPage(),
-                'per_page' => $suppliers->perPage(),
-                'total' => $suppliers->total(),
-                'last_page' => $suppliers->lastPage(),
-            ],
-            'errors' => 'Unknown Type: null'
-        ]);
+        $data = [
+            'data' => $suppliers->items(),
+            'current_page' => $suppliers->currentPage(),
+            'per_page' => $suppliers->perPage(),
+            'total' => $suppliers->total(),
+            'last_page' => $suppliers->lastPage(),
+        ];
+
+        return $this->successResponse($data, 'Data supplier berhasil diambil', 200);
     }
 
     /**
@@ -48,12 +48,7 @@ class SupplierController extends Controller
     {
         $supplier = $this->supplierService->create($request->validated());
 
-        return response()->json([
-            'status' => 201,
-            'message' => 'Supplier berhasil ditambahkan',
-            'data' => $supplier,
-            'errors' => 'Unknown Type: null'
-        ], 201);
+        return $this->successResponse($supplier, 'Supplier berhasil ditambahkan', 201);
     }
 
     /**
@@ -64,22 +59,10 @@ class SupplierController extends Controller
         $supplier = $this->supplierService->find($id);
 
         if (!$supplier) {
-            return response()->json([
-                'status' => 400,
-                'message' => 'Error',
-                'data' => 'Unknown Type: null',
-                'errors' => [
-                    'message' => 'Supplier tidak ditemukan'
-                ]
-            ], 404);
+            return $this->notFoundResponse('Supplier tidak ditemukan');
         }
 
-        return response()->json([
-            'status' => 200,
-            'message' => 'Data supplier berhasil diambil',
-            'data' => $supplier,
-            'errors' => 'Unknown Type: null'
-        ]);
+        return $this->successResponse($supplier, 'Data supplier berhasil diambil');
     }
 
     /**
@@ -90,24 +73,16 @@ class SupplierController extends Controller
         $supplier = $this->supplierService->find($id);
 
         if (!$supplier) {
-            return response()->json([
-                'status' => 400,
-                'message' => 'Error',
-                'data' => 'Unknown Type: null',
-                'errors' => [
-                    'message' => 'Supplier tidak ditemukan'
-                ]
-            ], 400);
+            return $this->errorResponse(
+                ['message' => 'Supplier tidak ditemukan'],
+                'Error',
+                400
+            );
         }
 
         $updated = $this->supplierService->update($supplier, $request->validated());
 
-        return response()->json([
-            'status' => 200,
-            'message' => 'Supplier berhasil diupdate',
-            'data' => $updated,
-            'errors' => 'Unknown Type: null'
-        ]);
+        return $this->successResponse($updated, 'Supplier berhasil diupdate', 200);
     }
 
     /**
@@ -118,23 +93,11 @@ class SupplierController extends Controller
         $supplier = $this->supplierService->find($id);
 
         if (!$supplier) {
-            return response()->json([
-                'status' => 400,
-                'message' => 'Error',
-                'data' => 'Unknown Type: null',
-                'errors' => [
-                    'message' => 'Supplier tidak ditemukan'
-                ]
-            ], 404);
+            return $this->notFoundResponse('Supplier tidak ditemukan');
         }
 
         $this->supplierService->delete($supplier);
 
-        return response()->json([
-            'status' => 200,
-            'message' => 'Supplier berhasil dihapus',
-            'data' => 'Unknown Type: null',
-            'errors' => 'Unknown Type: null'
-        ]);
+        return $this->successResponse(null, 'Supplier berhasil dihapus', 200);
     }
 }
