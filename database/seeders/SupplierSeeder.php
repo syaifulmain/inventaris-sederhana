@@ -30,10 +30,25 @@ class SupplierSeeder extends Seeder
         for ($i = 0; $i < 30; $i++) {
             // SUP-003 sampai SUP-032
             Supplier::create([
-                'code' => 'SUP-' . str_pad($i + 3, 3, '0', STR_PAD_LEFT), 
+                'code' => 'SUP-' . str_pad($i + 3, 3, '0', STR_PAD_LEFT),
                 'name' => $britpopNames[$i],
                 'address' => "Jl. " . $flowerStreets[$i] . " No. " . ($i + 3),
             ]);
         }
+
+        // Needed for StockTransactionSeeder
+        // {
+        Supplier::create([
+            'code' => 'SUP-033',
+            'name' => 'PT Maju Jaya',
+            'address' => 'Jl. Sudirman No. 123, Jakarta Pusat',
+        ]);
+
+        Supplier::create([
+            'code' => 'SUP-034',
+            'name' => 'CV Sukses Selalu',
+            'address' => 'Jl. Thamrin No. 456, Jakarta Selatan',
+        ]);
+        // }
     }
 }
