@@ -26,7 +26,7 @@
             <h3 class="text-3xl font-bold text-heading">{{ $title }}</h3>
             <button wire:click="openCreateModal"
                     class="text-white bg-brand box-border border border-transparent hover:bg-brand-strong focus:ring-4 focus:ring-brand-medium shadow-xs font-medium leading-5 rounded-base text-sm px-4 py-2.5 focus:outline-none">
-                + Tambah
+                Tambah
             </button>
         </div>
 
@@ -34,6 +34,7 @@
         <div>
             <input wire:model.live.debounce.300ms="search"
                    type="text"
+                   name="search"
                    class="w-full px-3 py-2.5 border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body"
                    placeholder="Cari kode, nama atau alamat supplier...">
         </div>
@@ -46,9 +47,13 @@
             <tr>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kode</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Supplier</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama
+                    Supplier
+                </th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Alamat</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Dibuat</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal
+                    Dibuat
+                </th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
             </tr>
             </thead>
@@ -127,6 +132,7 @@
                             <input
                                 wire:model="code"
                                 type="text"
+                                name="code"
                                 class="border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body"
                                 placeholder="Contoh: SUP001"
                                 maxlength="20"
@@ -140,6 +146,7 @@
                             <input
                                 wire:model="name"
                                 type="text"
+                                name="name"
                                 class="border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body"
                                 placeholder="Masukan nama supplier"
                             />
@@ -152,6 +159,7 @@
                             <textarea
                                 wire:model="address"
                                 rows="3"
+                                name="address"
                                 class="border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body"
                                 placeholder="Masukan alamat supplier"
                             ></textarea>

@@ -25,8 +25,7 @@
         <div class="flex justify-between items-center mb-4">
             <h3 class="text-3xl font-bold text-heading">{{ $title }}</h3>
             <button wire:click="openCreateModal"
-                    class="text-white bg-brand box-border border border-transparent hover:bg-brand-strong focus:ring-4 focus:ring-brand-medium shadow-xs font-medium leading-5 rounded-base text-sm px-4 py-2.5 focus:outline-none">
-                + Tambah
+                    class="text-white bg-brand box-border border border-transparent hover:bg-brand-strong focus:ring-4 focus:ring-brand-medium shadow-xs font-medium leading-5 rounded-base text-sm px-4 py-2.5 focus:outline-none">Tambah
             </button>
         </div>
 
@@ -36,6 +35,7 @@
             <div>
                 <input wire:model.live.debounce.300ms="search"
                        type="text"
+                       name="search"
                        class="w-full px-3 py-2.5 border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body"
                        placeholder="Cari kode atau nama produk...">
             </div>
@@ -43,6 +43,7 @@
             <div>
                 <select
                     wire:model.live="categoryFilter"
+                    name="categoryFilter"
                     class="w-full px-3 py-2.5 border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body"
                 >
                     <option value="">Semua Kategori</option>
@@ -144,6 +145,7 @@
                             <input
                                 wire:model="code"
                                 type="text"
+                                name="code"
                                 class="border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body"
                                 placeholder="Contoh: PROD001"
                                 maxlength="20"
@@ -157,6 +159,7 @@
                             <input
                                 wire:model="name"
                                 type="text"
+                                name="name"
                                 class="border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body"
                                 placeholder="Masukan nama produk"
                             />
@@ -168,6 +171,7 @@
                             <label class="block mb-2.5 text-sm font-medium text-heading">Kategori</label>
                             <select
                                 wire:model="category_id"
+                                name="category_id"
                                 class="w-full px-3 py-2.5 border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body"
                             >
                                 <option value="">Pilih Kategori</option>
