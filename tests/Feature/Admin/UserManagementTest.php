@@ -2,6 +2,7 @@
 
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use App\Services\UserService;
 
 test('admin can view list of users', function () {
     $admin = User::factory()->admin()->create();
@@ -308,4 +309,288 @@ test('update user email must be unique', function () {
 
     $response->assertStatus(422)
         ->assertJsonValidationErrors(['email']);
+});
+
+test('admin can combine multiple filters', function () {
+    $admin = User::factory()->admin()->create();
+    User::factory()->create(['name' => 'Admin John', 'role' => 'admin', 'is_active' => true]);
+    User::factory()->create(['name' => 'User John', 'role' => 'user', 'is_active' => true]);
+
+    $response = $this->actingAs($admin, 'sanctum')
+        ->getJson('/api/admin/users?search=John&role=admin&is_active=1');
+
+    $response->assertStatus(200);
+
+    $users = $response->json('data.data');
+    expect(count($users))->toBeGreaterThan(0);
+    foreach ($users as $user) {
+        expect($user['role'])->toBe('admin');
+    }
+});
+
+test('admin can update user password', function () {
+    $admin = User::factory()->admin()->create();
+    $user = User::factory()->create();
+
+    $response = $this->actingAs($admin, 'sanctum')
+        ->putJson("/api/admin/users/{$user->id}", [
+            'name' => $user->name,
+            'email' => $user->email,
+            'password' => 'newpassword123',
+            'password_confirmation' => 'newpassword123',
+        ]);
+
+    $response->assertStatus(200)
+        ->assertJson([
+            'status' => 200,
+            'message' => 'User berhasil diupdate',
+        ]);
+
+    $user->refresh();
+    expect(Hash::check('newpassword123', $user->password))->toBeTrue();
+});
+
+test('admin can update user without changing password', function () {
+    $admin = User::factory()->admin()->create();
+    $user = User::factory()->create(['password' => Hash::make('oldpassword')]);
+    $oldPassword = $user->password;
+
+    $response = $this->actingAs($admin, 'sanctum')
+        ->putJson("/api/admin/users/{$user->id}", [
+            'name' => 'Updated Name',
+            'email' => $user->email,
+        ]);
+
+    $response->assertStatus(200);
+
+    $user->refresh();
+    expect($user->name)->toBe('Updated Name');
+    expect($user->password)->toBe($oldPassword);
+});
+
+test('admin can update user with same email', function () {
+    $admin = User::factory()->admin()->create();
+    $user = User::factory()->create(['email' => 'user@example.com']);
+
+    $response = $this->actingAs($admin, 'sanctum')
+        ->putJson("/api/admin/users/{$user->id}", [
+            'name' => 'Updated Name',
+            'email' => 'user@example.com',
+        ]);
+
+    $response->assertStatus(200)
+        ->assertJson([
+            'status' => 200,
+            'message' => 'User berhasil diupdate',
+        ]);
+});
+
+test('create user validation fails with password mismatch', function () {
+    $admin = User::factory()->admin()->create();
+
+    $response = $this->actingAs($admin, 'sanctum')
+        ->postJson('/api/admin/users', [
+            'name' => 'New User',
+            'email' => 'newuser@example.com',
+            'password' => 'password123',
+            'password_confirmation' => 'different',
+            'role' => 'user',
+        ]);
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['password']);
+});
+
+test('create user validation fails with invalid email', function () {
+    $admin = User::factory()->admin()->create();
+
+    $response = $this->actingAs($admin, 'sanctum')
+        ->postJson('/api/admin/users', [
+            'name' => 'New User',
+            'email' => 'invalid-email',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+            'role' => 'user',
+        ]);
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['email']);
+});
+
+test('update user validation fails with password mismatch', function () {
+    $admin = User::factory()->admin()->create();
+    $user = User::factory()->create();
+
+    $response = $this->actingAs($admin, 'sanctum')
+        ->putJson("/api/admin/users/{$user->id}", [
+            'name' => $user->name,
+            'email' => $user->email,
+            'password' => 'newpassword',
+            'password_confirmation' => 'different',
+        ]);
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['password']);
+});
+
+test('update user validation fails with short password', function () {
+    $admin = User::factory()->admin()->create();
+    $user = User::factory()->create();
+
+    $response = $this->actingAs($admin, 'sanctum')
+        ->putJson("/api/admin/users/{$user->id}", [
+            'name' => $user->name,
+            'email' => $user->email,
+            'password' => '123',
+            'password_confirmation' => '123',
+        ]);
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['password']);
+});
+
+test('create user validation fails with short password', function () {
+    $admin = User::factory()->admin()->create();
+
+    $response = $this->actingAs($admin, 'sanctum')
+        ->postJson('/api/admin/users', [
+            'name' => 'New User',
+            'email' => 'newuser@example.com',
+            'password' => '123',
+            'password_confirmation' => '123',
+            'role' => 'user',
+        ]);
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['password']);
+});
+
+test('admin can create user with is_active status', function () {
+    $admin = User::factory()->admin()->create();
+
+    $response = $this->actingAs($admin, 'sanctum')
+        ->postJson('/api/admin/users', [
+            'name' => 'Inactive User',
+            'email' => 'inactive@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+            'role' => 'user',
+            'is_active' => false,
+        ]);
+
+    $response->assertStatus(201);
+
+    $this->assertDatabaseHas('users', [
+        'email' => 'inactive@example.com',
+        'is_active' => false,
+    ]);
+});
+
+test('admin can update user is_active status', function () {
+    $admin = User::factory()->admin()->create();
+    $user = User::factory()->create(['is_active' => true]);
+
+    $response = $this->actingAs($admin, 'sanctum')
+        ->putJson("/api/admin/users/{$user->id}", [
+            'name' => $user->name,
+            'email' => $user->email,
+            'is_active' => false,
+        ]);
+
+    $response->assertStatus(200);
+
+    $user->refresh();
+    expect($user->is_active)->toBe(false);
+});
+
+
+test('admin receives error when user listing fails', function () {
+    $admin = User::factory()->admin()->create();
+
+    $mock = Mockery::mock(UserService::class);
+    $mock->shouldReceive('getPaginated')
+        ->once()
+        ->andThrow(new Exception('Service error'));
+    $this->app->instance(UserService::class, $mock);
+
+    $response = $this->actingAs($admin, 'sanctum')
+        ->getJson('/api/admin/users');
+
+    $response->assertStatus(500)
+        ->assertJson([
+            'status' => 500,
+            'message' => 'Gagal mengambil data user',
+            'errors' => ['message' => 'Service error'],
+        ]);
+});
+
+test('admin receives error when user creation fails', function () {
+    $admin = User::factory()->admin()->create();
+
+    $mock = Mockery::mock(UserService::class);
+    $mock->shouldReceive('createUser')
+        ->once()
+        ->andThrow(new Exception('Service error'));
+    $this->app->instance(UserService::class, $mock);
+
+    $response = $this->actingAs($admin, 'sanctum')
+        ->postJson('/api/admin/users', [
+            'name' => 'Broken User',
+            'email' => 'broken@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+            'role' => 'user',
+        ]);
+
+    $response->assertStatus(500)
+        ->assertJson([
+            'status' => 500,
+            'message' => 'Gagal membuat user',
+            'errors' => ['message' => 'Service error'],
+        ]);
+});
+
+test('admin receives error when user update fails', function () {
+    $admin = User::factory()->admin()->create();
+    $user = User::factory()->create();
+
+    $mock = Mockery::mock(UserService::class);
+    $mock->shouldReceive('updateUser')
+        ->once()
+        ->andThrow(new Exception('Service error'));
+    $this->app->instance(UserService::class, $mock);
+
+    $response = $this->actingAs($admin, 'sanctum')
+        ->putJson("/api/admin/users/{$user->id}", [
+            'name' => 'Updated Name',
+            'email' => $user->email,
+        ]);
+
+    $response->assertStatus(500)
+        ->assertJson([
+            'status' => 500,
+            'message' => 'Gagal mengupdate user',
+            'errors' => ['message' => 'Service error'],
+        ]);
+});
+
+test('admin receives error when user deletion fails', function () {
+    $admin = User::factory()->admin()->create();
+    $user = User::factory()->create();
+
+    $mock = Mockery::mock(UserService::class);
+    $mock->shouldReceive('delete')
+        ->once()
+        ->andThrow(new Exception('Service error'));
+    $this->app->instance(UserService::class, $mock);
+
+    $response = $this->actingAs($admin, 'sanctum')
+        ->deleteJson("/api/admin/users/{$user->id}");
+
+    $response->assertStatus(500)
+        ->assertJson([
+            'status' => 500,
+            'message' => 'Gagal menghapus user',
+            'errors' => ['message' => 'Service error'],
+        ]);
 });

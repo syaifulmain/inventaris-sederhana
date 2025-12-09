@@ -39,10 +39,6 @@ class UserService extends BaseService
             });
         }
 
-        if (isset($filters['is_active'])) {
-            $query->where('is_active', $filters['is_active']);
-        }
-
         // Default ordering
         $query->orderBy('created_at', 'desc');
 

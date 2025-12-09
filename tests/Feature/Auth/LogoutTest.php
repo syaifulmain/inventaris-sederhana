@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use App\Services\AuthService;
 
 test('authenticated user can logout', function () {
     $user = User::factory()->create();
@@ -42,4 +43,24 @@ test('logout deletes all user tokens', function () {
 
     $response->assertStatus(200);
     expect($user->tokens()->count())->toBe(0);
+});
+
+test('logout returns error when auth service throws exception', function () {
+    $user = User::factory()->create();
+
+    $mock = Mockery::mock(AuthService::class);
+    $mock->shouldReceive('logout')
+        ->once()
+        ->andThrow(new Exception('Service error'));
+    $this->app->instance(AuthService::class, $mock);
+
+    $response = $this->actingAs($user, 'sanctum')
+        ->postJson('/api/logout');
+
+    $response->assertStatus(500)
+        ->assertJson([
+            'status' => 500,
+            'message' => 'Logout gagal',
+            'errors' => ['message' => 'Service error'],
+        ]);
 });
