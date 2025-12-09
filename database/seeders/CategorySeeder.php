@@ -14,14 +14,8 @@ class CategorySeeder extends Seeder
     public function run(): void
     {
         $categories = [
-            ['code' => 'CAT-001', 'name' => 'Laptop'],
-            ['code' => 'CAT-002', 'name' => 'Desktop Computer'],
-            ['code' => 'CAT-003', 'name' => 'Monitor'],
-            ['code' => 'CAT-004', 'name' => 'Printer'],
-            ['code' => 'CAT-005', 'name' => 'Network Equipment'],
-            ['code' => 'CAT-006', 'name' => 'Mobile Device'],
-            ['code' => 'CAT-007', 'name' => 'Audio Equipment'],
-            ['code' => 'CAT-008', 'name' => 'Office Furniture'],
+            ['code' => 'ELEC', 'name' => 'Electronics'],
+            ['code' => 'FASH', 'name' => 'Fashion'],
         ];
 
         foreach ($categories as $category) {
