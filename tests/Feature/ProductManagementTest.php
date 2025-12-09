@@ -55,10 +55,10 @@ test('admin can filter products by category', function () {
     $response->assertStatus(200);
 
     $products = $response->json('data.data');
-    
+
     // Pastikan jumlah produk sesuai yang dibuat untuk kategori Laptop
     expect(count($products))->toBe(3);
-    
+
     // Pastikan semua produk adalah produk Laptop yang dibuat
     $productIds = collect($products)->pluck('id')->toArray();
     foreach ($laptopProducts as $laptopProduct) {
@@ -85,7 +85,7 @@ test('admin can create new product', function () {
     $response = $this->actingAs($admin, 'sanctum')
         ->postJson('/api/products', [
             'code' => 'PROD-999',
-            'category_id' => $category->id, 
+            'category_id' => $category->id,
             'name' => 'New Product',
         ]);
 
@@ -228,9 +228,97 @@ test('update product code must be unique', function () {
     $response = $this->actingAs($admin, 'sanctum')
         ->putJson("/api/products/{$product->id}", [
             'code' => 'existing-code',
-        ]); 
+        ]);
 
     $response->assertStatus(422)
         ->assertJsonValidationErrors(['code']);
 });
 
+test('index returns error when service throws exception', function () {
+    $admin = User::factory()->admin()->create();
+
+    $mock = Mockery::mock(\App\Services\ProductService::class);
+    $mock->shouldReceive('getPaginated')
+        ->once()
+        ->andThrow(new Exception('Service error'));
+    $this->app->instance(\App\Services\ProductService::class, $mock);
+
+    $response = $this->actingAs($admin, 'sanctum')
+        ->getJson('/api/products');
+
+    $response->assertStatus(500)
+        ->assertJson([
+            'status' => 500,
+            'message' => 'Gagal mengambil data produk',
+            'errors' => ['message' => 'Service error'],
+        ]);
+});
+
+test('store returns error when service throws exception', function () {
+    $admin = User::factory()->admin()->create();
+    $category = Category::factory()->create();
+
+    $mock = Mockery::mock(\App\Services\ProductService::class);
+    $mock->shouldReceive('createProduct')
+        ->once()
+        ->andThrow(new Exception('Create error'));
+    $this->app->instance(\App\Services\ProductService::class, $mock);
+
+    $response = $this->actingAs($admin, 'sanctum')
+        ->postJson('/api/products', [
+            'code' => 'TEST-001',
+            'name' => 'Test Product',
+            'category_id' => $category->id,
+        ]);
+
+    $response->assertStatus(500)
+        ->assertJson([
+            'status' => 500,
+            'message' => 'Gagal membuat produk',
+            'errors' => ['message' => 'Create error'],
+        ]);
+});
+
+test('update returns error when service throws generic exception', function () {
+    $admin = User::factory()->admin()->create();
+    $product = Product::factory()->create();
+
+    $mock = Mockery::mock(\App\Services\ProductService::class);
+    $mock->shouldReceive('updateProduct')
+        ->once()
+        ->andThrow(new Exception('Update error'));
+    $this->app->instance(\App\Services\ProductService::class, $mock);
+
+    $response = $this->actingAs($admin, 'sanctum')
+        ->putJson("/api/products/{$product->id}", [
+            'name' => 'Updated Name',
+        ]);
+
+    $response->assertStatus(500)
+        ->assertJson([
+            'status' => 500,
+            'message' => 'Gagal mengupdate produk',
+            'errors' => ['message' => 'Update error'],
+        ]);
+});
+
+test('delete returns error when service throws generic exception', function () {
+    $admin = User::factory()->admin()->create();
+    $product = Product::factory()->create();
+
+    $mock = Mockery::mock(\App\Services\ProductService::class);
+    $mock->shouldReceive('delete')
+        ->once()
+        ->andThrow(new Exception('Delete error'));
+    $this->app->instance(\App\Services\ProductService::class, $mock);
+
+    $response = $this->actingAs($admin, 'sanctum')
+        ->deleteJson("/api/products/{$product->id}");
+
+    $response->assertStatus(500)
+        ->assertJson([
+            'status' => 500,
+            'message' => 'Gagal menghapus produk',
+            'errors' => ['message' => 'Delete error'],
+        ]);
+});
