@@ -14,4 +14,20 @@ class Supplier extends Model
         'name',
         'address',
     ];
+
+    /**
+     * Scope for search
+     */
+    public function scopeSearch($query, $keyword)
+    {
+        if (empty($keyword)) {
+            return $query;
+        }
+
+        return $query->where(function($q) use ($keyword) {
+            $q->where('code', 'like', "%{$keyword}%")
+                ->orWhere('name', 'like', "%{$keyword}%")
+                ->orWhere('address', 'like', "%{$keyword}%");
+        });
+    }
 }

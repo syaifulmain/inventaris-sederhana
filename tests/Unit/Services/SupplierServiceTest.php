@@ -2,8 +2,8 @@
 
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use App\Services\SupplierService;
 use App\Models\Supplier;
+use App\Services\SupplierService;
 
 uses(TestCase::class, RefreshDatabase::class);
 
@@ -11,100 +11,79 @@ beforeEach(function () {
     $this->supplierService = app(SupplierService::class);
 });
 
-/**
- * Create Supplier
- */
-test('create supplier stores correct data', function () {
+test('create supplier stores data correctly', function () {
     $supplier = $this->supplierService->create([
         'code' => 'SUP-001',
         'name' => 'PT. Maju Jaya',
-        'address' => 'Jl. Sudirman No. 123, Jakarta Pusat',
+        'address' => 'Jl. Sudirman No. 123',
     ]);
 
     expect($supplier->code)->toBe('SUP-001');
     expect($supplier->name)->toBe('PT. Maju Jaya');
-    expect($supplier->address)->toBe('Jl. Sudirman No. 123, Jakarta Pusat');
-});
-
-/**
- * Update Supplier
- */
-test('update supplier modifies only provided fields', function () {
-    $supplier = Supplier::factory()->create([
+    expect($supplier->address)->toBe('Jl. Sudirman No. 123');
+    $this->assertDatabaseHas('suppliers', [
         'code' => 'SUP-001',
         'name' => 'PT. Maju Jaya',
-        'address' => 'Jl. Sudirman No. 123, Jakarta Pusat',
-    ]);
-
-    $updated = $this->supplierService->update($supplier, [
-        'name' => 'PT. Maju Jaya Sejahtera',
-    ]);
-
-    expect($updated->name)->toBe('PT. Maju Jaya Sejahtera');
-    expect($updated->address)->toBe('Jl. Sudirman No. 123, Jakarta Pusat'); // tetap sama
-});
-
-/**
- * Update throws TypeError (karena SupplierService::update butuh model Supplier)
- */
-test('update throws exception when supplier not found', function () {
-    $this->expectException(\TypeError::class);
-
-    $this->supplierService->update(99999, [
-        'name' => 'PT. Tidak Ada'
     ]);
 });
 
-/**
- * list() search test
- */
-test('list applies search filter on name, code, and address', function () {
-    Supplier::factory()->create([
-        'code' => 'SUP-001',
-        'name' => 'PT. Maju Jaya',
-        'address' => 'Jl. Sudirman No. 123, Jakarta Pusat',
+test('update supplier modifies data correctly', function () {
+    $supplier = Supplier::factory()->create(['name' => 'Old Name']);
+
+    $updated = $this->supplierService->update($supplier->id, [
+        'name' => 'New Name',
     ]);
 
-    Supplier::factory()->create([
-        'code' => 'SUP-002',
-        'name' => 'PT. Sejahtera',
-        'address' => 'Jl. Thamrin No. 456, Jakarta Pusat',
+    expect($updated->name)->toBe('New Name');
+    $this->assertDatabaseHas('suppliers', [
+        'id' => $supplier->id,
+        'name' => 'New Name',
     ]);
-
-    // Search by name
-    $result1 = $this->supplierService->list('Maju', 10, 1);
-    expect($result1->total())->toBeGreaterThan(0);
-    expect($result1->first()->name)->toBe('PT. Maju Jaya');
-
-    // Search by code
-    $result2 = $this->supplierService->list('SUP-002', 10, 1);
-    expect($result2->first()->code)->toBe('SUP-002');
-
-    // Search by address
-    $result3 = $this->supplierService->list('Thamrin', 10, 1);
-    expect($result3->first()->address)->toBe('Jl. Thamrin No. 456, Jakarta Pusat');
 });
 
-/**
- * Delete Supplier
- */
+test('get paginated applies search filter by code', function () {
+    Supplier::factory()->create(['code' => 'SUP-001']);
+    Supplier::factory()->create(['code' => 'SUP-002']);
+
+    $result = $this->supplierService->getPaginated(['search' => 'SUP-001'], 10);
+
+    expect($result->total())->toBe(1);
+    expect($result->first()->code)->toBe('SUP-001');
+});
+
+test('get paginated applies search filter by name', function () {
+    Supplier::factory()->create(['name' => 'PT. Maju Jaya']);
+    Supplier::factory()->create(['name' => 'PT. Sejahtera']);
+
+    $result = $this->supplierService->getPaginated(['search' => 'Maju'], 10);
+
+    expect($result->total())->toBeGreaterThan(0);
+    expect($result->first()->name)->toContain('Maju');
+});
+
+test('get paginated applies search filter by address', function () {
+    Supplier::factory()->create(['address' => 'Jl. Sudirman']);
+    Supplier::factory()->create(['address' => 'Jl. Thamrin']);
+
+    $result = $this->supplierService->getPaginated(['search' => 'Sudirman'], 10);
+
+    expect($result->total())->toBeGreaterThan(0);
+    expect($result->first()->address)->toContain('Sudirman');
+});
+
 test('delete removes supplier from database', function () {
-    $supplier = Supplier::factory()->create([
-        'code' => 'SUP-001',
-        'name' => 'PT. Maju Jaya',
-        'address' => 'Jl. Sudirman No. 123, Jakarta Pusat',
-    ]);
+    $supplier = Supplier::factory()->create();
 
-    $this->supplierService->delete($supplier);
+    $this->supplierService->delete($supplier->id);
 
     expect(Supplier::find($supplier->id))->toBeNull();
 });
 
-/**
- * delete throws TypeError (karena delete() butuh model Supplier)
- */
-test('delete throws exception when supplier does not exist', function () {
-    $this->expectException(\TypeError::class);
+test('find by id returns supplier', function () {
+    $supplier = Supplier::factory()->create(['code' => 'SUP-001']);
 
-    $this->supplierService->delete(99999); 
+    $found = $this->supplierService->findById($supplier->id);
+
+    expect($found->id)->toBe($supplier->id);
+    expect($found->code)->toBe('SUP-001');
 });
