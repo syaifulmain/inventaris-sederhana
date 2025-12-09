@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use App\Services\AuthService;
 use Illuminate\Support\Facades\Hash;
 
 beforeEach(function () {
@@ -103,4 +104,24 @@ test('login validation fails with short password', function () {
 
     $response->assertStatus(422)
         ->assertJsonValidationErrors(['password']);
+});
+
+test('login returns error when auth service throws exception', function () {
+    $mock = Mockery::mock(AuthService::class);
+    $mock->shouldReceive('login')
+        ->once()
+        ->andThrow(new Exception('Service error'));
+    $this->app->instance(AuthService::class, $mock);
+
+    $response = $this->postJson('/api/login', [
+        'email' => 'test@example.com',
+        'password' => 'password',
+    ]);
+
+    $response->assertStatus(401)
+        ->assertJson([
+            'status' => 401,
+            'message' => 'Login gagal',
+            'errors' => ['message' => 'Service error'],
+        ]);
 });

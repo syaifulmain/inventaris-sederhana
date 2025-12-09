@@ -24,7 +24,7 @@ class UserController extends Controller
     public function index(Request $request)
     {
         try {
-            $filters = $request->only(['search', 'role', 'is_active']);
+            $filters = $request->only(['search', 'role']);
             $perPage = $request->input('per_page', 10);
 
             $users = $this->userService->getPaginated($filters, $perPage);

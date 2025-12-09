@@ -1,11 +1,8 @@
 <?php
 
-use App\Http\Controllers\Api\SupplierController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\Admin\UserController;
-use App\Http\Controllers\Api\ProductController;
-use App\Http\Controllers\Api\StockTransactionController;
 
 // Public routes
 Route::post('/login', [AuthController::class, 'login']);
@@ -18,19 +15,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/profile', [AuthController::class, 'updateProfile']);
 
     // Menu routers
-    Route::apiResource('products', ProductController::class);
-
-    // Supplier management
-    Route::apiResource('suppliers', SupplierController::class);
-
-    Route::apiResource('stock-transactions', StockTransactionController::class);
+    Route::apiResource('categories', \App\Http\Controllers\Api\CategoryController::class);
+    Route::apiResource('products', \App\Http\Controllers\Api\ProductController::class);
+    Route::apiResource('suppliers', \App\Http\Controllers\Api\SupplierController::class);
+    Route::apiResource('stock-transactions', \App\Http\Controllers\Api\StockTransactionController::class);
 
     // Admin routes
     Route::middleware('admin')->prefix('admin')->group(function () {
         Route::apiResource('users', UserController::class);
     });
 });
-// Route::prefix('admin')->group(function () {
-//     Route::apiResource('users', UserController::class);
-//     Route::apiResource('products', ProductController::class);
-// });

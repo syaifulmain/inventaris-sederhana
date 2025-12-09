@@ -38,3 +38,42 @@ test('search scope filters by category', function () {
     expect($results->count())->toBeGreaterThan(0);
     expect($results->first()->category_id)->toBe($category->id);
 });
+
+test('search scope returns all products when keyword is empty', function () {
+    Product::factory()->count(3)->create();
+
+    $results = Product::search('')->get();
+
+    expect($results->count())->toBe(3);
+});
+
+test('search scope filters by code', function () {
+    Product::factory()->create(['code' => 'LAPTOP-001', 'name' => 'Product A']);
+    Product::factory()->create(['code' => 'MONITOR-001', 'name' => 'Product B']);
+
+    $results = Product::search('LAPTOP')->get();
+
+    expect($results->count())->toBe(1);
+    expect($results->first()->code)->toContain('LAPTOP');
+});
+
+test('byCategory scope returns all products when category_id is empty', function () {
+    Product::factory()->count(3)->create();
+
+    $results = Product::byCategory(null)->get();
+
+    expect($results->count())->toBe(3);
+});
+
+test('byCategory scope filters by category_id', function () {
+    $category1 = Category::factory()->create();
+    $category2 = Category::factory()->create();
+
+    Product::factory()->count(2)->create(['category_id' => $category1->id]);
+    Product::factory()->create(['category_id' => $category2->id]);
+
+    $results = Product::byCategory($category1->id)->get();
+
+    expect($results->count())->toBe(2);
+    expect($results->first()->category_id)->toBe($category1->id);
+});

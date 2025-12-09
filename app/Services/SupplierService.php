@@ -4,56 +4,36 @@ namespace App\Services;
 
 use App\Models\Supplier;
 
-class SupplierService
+class SupplierService extends BaseService
 {
-    /**
-     * List suppliers with optional search and pagination
-     */
-    public function list(?string $search = null, int $perPage = 10, int $page = 1)
+    public function __construct(Supplier $supplier)
     {
-        $query = Supplier::query();
+        $this->model = $supplier;
+    }
 
-        if ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->where('code', 'like', "%$search%")
-                  ->orWhere('name', 'like', "%$search%")
-                  ->orWhere('address', 'like', "%$search%");
-            });
+    public function findById($id)
+    {
+        $supplier = $this->model->find($id);
+
+        if (!$supplier) {
+            throw new \Illuminate\Database\Eloquent\ModelNotFoundException('Supplier tidak ditemukan');
         }
 
-        return $query->paginate($perPage, ['*'], 'page', $page);
-    }
-
-    /**
-     * Create a new supplier
-     */
-    public function create(array $data)
-    {
-        return Supplier::create($data);
-    }
-
-    /**
-     * Find supplier by ID
-     */
-    public function find($id)
-    {
-        return Supplier::find($id);
-    }
-
-    /**
-     * Update supplier
-     */
-    public function update(Supplier $supplier, array $data)
-    {
-        $supplier->update($data);
         return $supplier;
     }
 
-    /**
-     * Delete supplier
-     */
-    public function delete(Supplier $supplier)
+    protected function applyFilters($query, array $filters)
     {
-        $supplier->delete();
+        if (isset($filters['search'])) {
+            $query->where(function($q) use ($filters) {
+                $q->where('code', 'like', "%{$filters['search']}%")
+                    ->orWhere('name', 'like', "%{$filters['search']}%")
+                    ->orWhere('address', 'like', "%{$filters['search']}%");
+            });
+        }
+
+        $query->orderBy('created_at', 'desc');
+
+        return $query;
     }
 }

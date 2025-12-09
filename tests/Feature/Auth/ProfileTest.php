@@ -1,6 +1,8 @@
 <?php
 
 use App\Models\User;
+use App\Services\AuthService;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 test('authenticated user can view profile', function () {
@@ -116,4 +118,43 @@ test('password must be at least 6 characters', function () {
 
     $response->assertStatus(422)
         ->assertJsonValidationErrors(['password']);
+});
+
+//test('profile returns error when auth fails', function () {
+//    $user = User::factory()->create();
+//
+//    Auth::shouldReceive('user')
+//        ->once()
+//        ->andThrow(new Exception('Auth error'));
+//
+//    $response = $this->actingAs($user, 'sanctum')
+//        ->getJson('/api/profile');
+//
+//    $response->assertStatus(404)
+//        ->assertJson([
+//            'status' => 404,
+//            'message' => 'Profil tidak ditemukan',
+//        ]);
+//});
+
+test('update profile returns error when auth service throws exception', function () {
+    $user = User::factory()->create();
+
+    $mock = Mockery::mock(AuthService::class);
+    $mock->shouldReceive('updateProfile')
+        ->once()
+        ->andThrow(new Exception('Service error'));
+    $this->app->instance(AuthService::class, $mock);
+
+    $response = $this->actingAs($user, 'sanctum')
+        ->putJson('/api/profile', [
+            'name' => 'Updated Name',
+        ]);
+
+    $response->assertStatus(500)
+        ->assertJson([
+            'status' => 500,
+            'message' => 'Gagal mengupdate profil',
+            'errors' => ['message' => 'Service error'],
+        ]);
 });

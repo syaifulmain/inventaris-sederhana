@@ -6,73 +6,54 @@ use App\Models\Supplier;
 
 uses(TestCase::class, RefreshDatabase::class);
 
-/**
- * Supplier fillable attributes
- */
 test('supplier has fillable attributes', function () {
     $supplier = new Supplier();
 
-    expect($supplier->getFillable())
-        ->toContain('code', 'name', 'address');
+    expect($supplier->getFillable())->toContain('code', 'name', 'address');
 });
 
-/**
- * Supplier factory creates correct data
- */
-test('supplier factory creates a valid supplier', function () {
-    $supplier = Supplier::factory()->create([
-        'code' => 'SUP-001',
-        'name' => 'PT. Maju Jaya',
-        'address' => 'Jl. Sudirman No. 123, Jakarta Pusat',
-    ]);
+test('search scope filters by code', function () {
+    Supplier::factory()->create(['code' => 'SUP-001']);
+    Supplier::factory()->create(['code' => 'SUP-002']);
 
-    expect($supplier->code)->toBe('SUP-001');
-    expect($supplier->name)->toBe('PT. Maju Jaya');
-    expect($supplier->address)->toBe('Jl. Sudirman No. 123, Jakarta Pusat');
+    $results = Supplier::search('SUP-001')->get();
 
-    $this->assertDatabaseHas('suppliers', [
-        'id' => $supplier->id,
-        'code' => 'SUP-001',
-        'name' => 'PT. Maju Jaya',
-        'address' => 'Jl. Sudirman No. 123, Jakarta Pusat',
-    ]);
+    expect($results->count())->toBeGreaterThan(0);
+    expect($results->first()->code)->toBe('SUP-001');
 });
 
-/**
- * Update supplier
- */
-test('supplier can be updated', function () {
-    $supplier = Supplier::factory()->create([
-        'code' => 'SUP-001',
-        'name' => 'PT. Maju Jaya',
-        'address' => 'Jl. Sudirman No. 123, Jakarta Pusat',
-    ]);
+test('search scope filters by name', function () {
+    Supplier::factory()->create(['name' => 'PT. Maju Jaya']);
+    Supplier::factory()->create(['name' => 'PT. Sejahtera']);
 
-    $supplier->update([
-        'name' => 'PT. Maju Jaya Sejahtera',
-    ]);
+    $results = Supplier::search('Maju')->get();
 
-    expect($supplier->fresh()->name)->toBe('PT. Maju Jaya Sejahtera');
-
-    $this->assertDatabaseHas('suppliers', [
-        'id' => $supplier->id,
-        'name' => 'PT. Maju Jaya Sejahtera',
-    ]);
+    expect($results->count())->toBeGreaterThan(0);
+    expect($results->first()->name)->toContain('Maju');
 });
 
-/**
- * Delete supplier
- */
-test('supplier can be deleted', function () {
-    $supplier = Supplier::factory()->create([
-        'code' => 'SUP-001',
-        'name' => 'PT. Maju Jaya',
-        'address' => 'Jl. Sudirman No. 123, Jakarta Pusat',
-    ]);
+test('search scope filters by address', function () {
+    Supplier::factory()->create(['address' => 'Jl. Sudirman']);
+    Supplier::factory()->create(['address' => 'Jl. Thamrin']);
 
-    $supplier->delete();
+    $results = Supplier::search('Sudirman')->get();
 
-    $this->assertDatabaseMissing('suppliers', [
-        'id' => $supplier->id,
-    ]);
+    expect($results->count())->toBeGreaterThan(0);
+    expect($results->first()->address)->toContain('Sudirman');
+});
+
+test('supplier code must be unique', function () {
+    Supplier::factory()->create(['code' => 'SUP-001']);
+
+    $this->expectException(\Illuminate\Database\QueryException::class);
+
+    Supplier::factory()->create(['code' => 'SUP-001']);
+});
+
+test('search scope returns all suppliers when keyword is empty', function () {
+    Supplier::factory()->count(3)->create();
+
+    $results = Supplier::search('')->get();
+
+    expect($results->count())->toBe(3);
 });

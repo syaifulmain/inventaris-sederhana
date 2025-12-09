@@ -54,11 +54,7 @@ class AuthController extends Controller
             $user = auth()->user();
             return $this->successResponse($user, 'Data profil berhasil diambil');
         } catch (Exception $e) {
-            return $this->errorResponse(
-                ['message' => $e->getMessage()],
-                'Gagal mengambil data profil',
-                500
-            );
+            return $this->notFoundResponse('Profil tidak ditemukan');
         }
     }
 

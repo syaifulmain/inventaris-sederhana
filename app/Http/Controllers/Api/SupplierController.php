@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\SupplierRequest;
+use App\Http\Requests\StoreSupplierRequest;
+use App\Http\Requests\UpdateSupplierRequest;
 use App\Services\SupplierService;
 use Illuminate\Http\Request;
 use App\Traits\ApiResponseTrait;
+use Exception;
 
 class SupplierController extends Controller
 {
@@ -19,85 +21,79 @@ class SupplierController extends Controller
         $this->supplierService = $supplierService;
     }
 
-    /**
-     * List suppliers (with pagination and search)
-     */
     public function index(Request $request)
     {
-        $perPage = $request->query('per_page', 10);
-        $page = $request->query('page', 1);
-        $search = $request->query('search');
+        try {
+            $filters = $request->only(['search']);
+            $perPage = $request->input('per_page', 10);
 
-        $suppliers = $this->supplierService->list($search, $perPage, $page);
+            $suppliers = $this->supplierService->getPaginated($filters, $perPage);
 
-        $data = [
-            'data' => $suppliers->items(),
-            'current_page' => $suppliers->currentPage(),
-            'per_page' => $suppliers->perPage(),
-            'total' => $suppliers->total(),
-            'last_page' => $suppliers->lastPage(),
-        ];
-
-        return $this->successResponse($data, 'Data supplier berhasil diambil', 200);
-    }
-
-    /**
-     * Create supplier
-     */
-    public function store(SupplierRequest $request)
-    {
-        $supplier = $this->supplierService->create($request->validated());
-
-        return $this->successResponse($supplier, 'Supplier berhasil ditambahkan', 201);
-    }
-
-    /**
-     * Get supplier by ID
-     */
-    public function show($id)
-    {
-        $supplier = $this->supplierService->find($id);
-
-        if (!$supplier) {
-            return $this->notFoundResponse('Supplier tidak ditemukan');
-        }
-
-        return $this->successResponse($supplier, 'Data supplier berhasil diambil');
-    }
-
-    /**
-     * Update supplier
-     */
-    public function update(SupplierRequest $request, $id)
-    {
-        $supplier = $this->supplierService->find($id);
-
-        if (!$supplier) {
+            return $this->successResponse($suppliers, 'Data supplier berhasil diambil');
+        } catch (Exception $e) {
             return $this->errorResponse(
-                ['message' => 'Supplier tidak ditemukan'],
-                'Error',
-                400
+                ['message' => $e->getMessage()],
+                'Gagal mengambil data supplier',
+                500
             );
         }
-
-        $updated = $this->supplierService->update($supplier, $request->validated());
-
-        return $this->successResponse($updated, 'Supplier berhasil diupdate', 200);
     }
 
-    /**
-     * Delete supplier
-     */
-    public function destroy($id)
+    public function store(StoreSupplierRequest $request)
     {
-        $supplier = $this->supplierService->find($id);
+        try {
+            $supplier = $this->supplierService->create($request->validated());
+            return $this->successResponse($supplier, 'Supplier berhasil ditambahkan', 201);
+        } catch (Exception $e) {
+            return $this->errorResponse(
+                ['message' => $e->getMessage()],
+                'Gagal menambahkan supplier',
+                500
+            );
+        }
+    }
 
-        if (!$supplier) {
+    public function show($id)
+    {
+        try {
+            $supplier = $this->supplierService->findById($id);
+            return $this->successResponse($supplier, 'Data supplier berhasil diambil');
+        } catch (Exception $e) {
             return $this->notFoundResponse('Supplier tidak ditemukan');
         }
+    }
 
-        $this->supplierService->delete($supplier);
+    public function update(UpdateSupplierRequest $request, $id)
+    {
+        try {
+            $supplier = $this->supplierService->update($id, $request->validated());
+            return $this->successResponse($supplier, 'Supplier berhasil diupdate');
+        } catch (Exception $e) {
+            if ($e instanceof \Illuminate\Database\Eloquent\ModelNotFoundException) {
+                return $this->notFoundResponse('Supplier tidak ditemukan');
+            }
+            return $this->errorResponse(
+                ['message' => $e->getMessage()],
+                'Gagal mengupdate supplier',
+                500
+            );
+        }
+    }
 
-        return $this->successResponse(null, 'Supplier berhasil dihapus', 200);
+    public function destroy($id)
+    {
+        try {
+            $this->supplierService->delete($id);
+            return $this->successResponse(null, 'Supplier berhasil dihapus');
+        } catch (Exception $e) {
+            if ($e instanceof \Illuminate\Database\Eloquent\ModelNotFoundException) {
+                return $this->notFoundResponse('Supplier tidak ditemukan');
+            }
+            return $this->errorResponse(
+                ['message' => $e->getMessage()],
+                'Gagal menghapus supplier',
+                500
+            );
+        }
     }
 }
