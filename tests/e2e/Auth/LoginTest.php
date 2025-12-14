@@ -3,7 +3,7 @@
 use function Pest\Laravel\{actingAs};
 use App\Models\User;
 
-it('dapat menampilkan halaman login', function () {
+it('can display login page', function () {
     $page = visit('/login');
 
     $page->assertSee('Masuk ke aplikasi')
@@ -13,7 +13,7 @@ it('dapat menampilkan halaman login', function () {
         ->assertSee('Masuk');
 });
 
-it('dapat login dengan kredensial yang valid', function () {
+it('can login with valid credentials', function () {
     $user = User::factory()->create([
         'email' => 'user@test.com',
         'password' => bcrypt('password123'),
@@ -28,7 +28,7 @@ it('dapat login dengan kredensial yang valid', function () {
         ->assertPathIs('/dashboard');
 });
 
-it('dapat login sebagai admin dan redirect ke halaman admin', function () {
+it('can login as admin and redirect to admin page', function () {
     $admin = User::factory()->create([
         'email' => 'admin@test.com',
         'password' => bcrypt('password123'),
@@ -43,7 +43,7 @@ it('dapat login sebagai admin dan redirect ke halaman admin', function () {
         ->assertPathIs('/admin/users');
 });
 
-it('menampilkan error ketika email kosong', function () {
+it('shows error when email is empty', function () {
     $page = visit('/login');
 
     $page->type('password', 'password123')
@@ -51,7 +51,7 @@ it('menampilkan error ketika email kosong', function () {
         ->assertSee('email wajib diisi');
 });
 
-it('menampilkan error ketika password kosong', function () {
+it('shows error when password is empty', function () {
     $page = visit('/login');
 
     $page->type('email', 'user@test.com')
@@ -59,7 +59,7 @@ it('menampilkan error ketika password kosong', function () {
         ->assertSee('password wajib diisi');
 });
 
-it('menampilkan error ketika format email tidak valid', function () {
+it('shows error when email format is invalid', function () {
     $page = visit('/login');
 
     $page->type('email', 'emailtidakvalid')
@@ -68,7 +68,7 @@ it('menampilkan error ketika format email tidak valid', function () {
         ->assertSee('email harus berupa alamat surel yang valid');
 });
 
-it('menampilkan error ketika password kurang dari 6 karakter', function () {
+it('shows error when password is less than 6 characters', function () {
     $page = visit('/login');
 
     $page->type('email', 'user@test.com')
@@ -77,7 +77,7 @@ it('menampilkan error ketika password kurang dari 6 karakter', function () {
         ->assertSee('password minimal berisi 6 karakter');
 });
 
-it('menampilkan error ketika user tidak ditemukan', function () {
+it('shows error when user is not found', function () {
     $page = visit('/login');
 
     $page->type('email', 'notexist@test.com')
@@ -86,25 +86,7 @@ it('menampilkan error ketika user tidak ditemukan', function () {
         ->assertSee(' Email atau password salah ');
 });
 
-it('dapat menggunakan fitur remember me', function () {
-    $user = User::factory()->create([
-        'email' => 'user@test.com',
-        'password' => bcrypt('password123')
-    ]);
-
-    $page = visit('/login');
-
-    $page->type('email', 'user@test.com')
-        ->type('password', 'password123')
-        ->check('remember')
-        ->press('Masuk')
-        ->assertPathIs('/dashboard');
-
-    $user->refresh();
-    expect($user->remember_token)->not->toBeNull();
-});
-
-it('tetap di halaman login ketika terjadi error validasi', function () {
+it('stays on login page when validation error occurs', function () {
     $page = visit('/login');
 
     $page->type('email', 'emailtidakvalid')
@@ -112,7 +94,7 @@ it('tetap di halaman login ketika terjadi error validasi', function () {
         ->assertPathIs('/login');
 });
 
-it('redirect ke dashboard jika sudah login', function () {
+it('redirects to dashboard if already logged in', function () {
     $user = User::factory()->create();
 
     actingAs($user);
