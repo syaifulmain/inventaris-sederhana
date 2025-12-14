@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\StockTransactionType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -17,7 +18,12 @@ class StockTransactionFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'product_id' => 1,
+            'supplier_id' => 1,
+            'type' => StockTransactionType::IN,
+            'quantity' => 10,
+            'transaction_date' => now(),
+            'user_id' => 1,
         ];
     }
 }
