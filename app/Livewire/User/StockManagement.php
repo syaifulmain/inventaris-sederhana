@@ -128,7 +128,7 @@ class StockManagement extends Component
             $data = [
                 'product_id' => $this->product_id,
                 'supplier_id' => $this->supplier_id,
-                'type' => $this->type->value,
+                'type' => $this->type,
                 'quantity' => $this->quantity,
                 'description' => $this->description,
                 'transaction_date' => $this->transaction_date,
@@ -144,9 +144,11 @@ class StockManagement extends Component
 
             $this->closeModal();
 
-        } catch (\Exception $e) {
-            $this->addError('save', 'Gagal menyimpan transaksi stok: ' . $e->getMessage());
+        } catch (\Throwable $e) {
+            report($e); // 🔥 INI KUNCI
+            $this->addError('save', 'Gagal menyimpan transaksi stok');
         }
+
     }
 
     public function delete($id, StockTransactionService $stockTransactionService)
