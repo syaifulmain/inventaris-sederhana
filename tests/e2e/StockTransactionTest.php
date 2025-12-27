@@ -117,28 +117,33 @@ it('can open create stock transaction modal', function () {
         ->assertSee('Batal');
 });
 
-// it('can create stock in transaction', function () {
-//     $product = Product::factory()->create();
-//     $supplier = Supplier::factory()->create();
+it('can create stock in transaction', function () {
+    $product = Product::factory()->create();
+    $supplier = Supplier::factory()->create();
 
-//     $page = visit('/stocks');
+    $page = visit('/stocks');
 
-//     $page->press('Tambah Transaksi')
-//         ->select('product_id', $product->id)
-//         ->select('supplier_id', $supplier->id)
-//         ->press('Stok Masuk')  // NOTE: This button does not want to be pressed. The actual feature works fine.
-//         ->type('quantity', 10)
-//         ->type('transaction_date', now()->format('Y-m-d'))
-//         ->press('Simpan')
-//         ->assertSee('berhasil');
 
-//     $this->assertDatabaseHas('stock_transactions', [
-//         'product_id' => $product->id,
-//         'supplier_id' => $supplier->id,
-//         'quantity' => 10,
-//         'type' => 'in',
-//     ]);
-// });
+    $page->press('Tambah Transaksi')
+        ->select('product_id', $product->id)
+        ->select('supplier_id', $supplier->id)
+        ->select(
+            'type',
+            'in'
+        )
+
+        ->type('quantity', "10")
+        ->type('transaction_date', now()->format('Y-m-d'))
+        ->press('Simpan')
+        ->assertSee('berhasil');
+
+    $this->assertDatabaseHas('stock_transactions', [
+        'product_id' => $product->id,
+        'supplier_id' => $supplier->id,
+        'quantity' => 10,
+        'type' => 'in',
+    ]);
+});
 
 it('shows validation error when required fields are empty', function () {
     $page = visit('/stocks');
