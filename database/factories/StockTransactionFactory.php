@@ -2,6 +2,10 @@
 
 namespace Database\Factories;
 
+use App\Enums\StockTransactionType;
+use App\Models\Product;
+use App\Models\Supplier;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -17,7 +21,13 @@ class StockTransactionFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'product_id' => Product::factory(),
+            'supplier_id' => Supplier::factory(),
+            'type' => fake()->randomElement([StockTransactionType::in, StockTransactionType::out]),
+            'quantity' => fake()->numberBetween(10, 100),
+            'description' => fake()->sentence(),
+            'transaction_date' => fake()->dateTimeBetween('-30 days', 'now'),
+            'user_id' => User::factory(),
         ];
     }
 }

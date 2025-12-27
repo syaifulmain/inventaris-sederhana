@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\StockTransactionType;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreStockTransactionRequest extends FormRequest
 {
@@ -11,7 +13,7 @@ class StoreStockTransactionRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +24,12 @@ class StoreStockTransactionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'product_id' => 'required|exists:products,id',
+            'supplier_id' => 'required|exists:suppliers,id',
+            'type' => ['required', Rule::enum(StockTransactionType::class)],
+            'quantity' => 'required|integer|min:1',
+            'description' => 'nullable|string|max:1000',
+            'transaction_date' => 'required|date',
         ];
     }
 }

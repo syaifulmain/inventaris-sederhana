@@ -37,42 +37,30 @@ class StockTransactionController extends Controller
 
             $products = $this->service->getPaginated($filters, $perPage);
 
-            return $this->successResponse($products, 'Stock transaction data retrieved successfully');
+            return $this->successResponse($products, 'Data transaksi stok berhasil diambil');
         } catch (Exception $e) {
             return $this->errorResponse(
                 ['message' => $e->getMessage()],
-                'Failed to retrieve stock transaction data',
+                'Gagal mengambil data transaksi stok',
                 500
             );
         }
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    // public function create()
-    // {
-    //     //
-    // }
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(StoreStockTransactionRequest $request)
     {
         try {
-            // $product = $this->productService->createProduct($request->validated());
-            $stockTransaction = $this->service->create($request->validated());
+            $stockTransaction = $this->service->createStockTransaction($request->validated());
 
             return $this->successResponse(
                 $stockTransaction,
-                'Stock transaction created successfully',
+                'Transaksi stok berhasil dibuat',
                 201
             );
         } catch (Exception $e) {
             return $this->errorResponse(
                 ['message' => $e->getMessage()],
-                'Failed to create stock transaction',
+                'Gagal membuat transaksi stok',
                 500
             );
         }
@@ -87,37 +75,25 @@ class StockTransactionController extends Controller
         try {
             $stockTransaction = $this->service->findById($stockTransaction->id);
             // $product = $this->productService->findById($id);
-            return $this->successResponse($stockTransaction, 'Stock transaction data retrieved successfully');
+            return $this->successResponse($stockTransaction, 'Data transaksi stok berhasil diambil');
         } catch (Exception $e) {
-            return $this->notFoundResponse('Stock transaction not found');
+            return $this->notFoundResponse('Transaksi Stok tidak ditemukan');
         }
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    // public function edit(StockTransaction $stockTransaction)
-    // {
-    //     //
-    // }
-
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(UpdateStockTransactionRequest $request, StockTransaction $stockTransaction)
     {
         try {
-            // $stockTransaction = $this->service->update($id, $request->validated());
-            $stockTransaction = $this->service->update($stockTransaction->id, $request->validated());
-            return $this->successResponse($stockTransaction, 'Stock transaction updated successfully');
+            $stockTransaction = $this->service->updateStockTransaction($stockTransaction->id, $request->validated());
+            return $this->successResponse($stockTransaction, 'Transaksi stok berhasil diperbarui');
         } catch (Exception $e) {
             if ($e instanceof \Illuminate\Database\Eloquent\ModelNotFoundException) {
-                return $this->notFoundResponse('Stock transaction not found');
+                return $this->notFoundResponse('Transaksi Stok tidak ditemukan');
             }
 
             return $this->errorResponse(
                 ['message' => $e->getMessage()],
-                'Gagal mengupdate produk',
+                'Gagal mengupdate transaksi stok',
                 500
             );
         }
@@ -130,15 +106,15 @@ class StockTransactionController extends Controller
     {
         try {
             $this->service->delete($stockTransaction->id);
-            return $this->successResponse(null, 'Stock transaction deleted successfully');
+            return $this->successResponse(null, 'Transaksi stok berhasil dihapus');
         } catch (Exception $e) {
             if ($e instanceof \Illuminate\Database\Eloquent\ModelNotFoundException) {
-                return $this->notFoundResponse('Stock transaction not found');
+                return $this->notFoundResponse('Transaksi Stok tidak ditemukan');
             }
 
             return $this->errorResponse(
                 ['message' => $e->getMessage()],
-                'Failed to delete stock transaction',
+                'Gagal menghapus transaksi stok',
                 500
             );
         }
