@@ -14,7 +14,7 @@ class UpdateUserRequest extends FormRequest
 
     public function rules(): array
     {
-        $userId = $this->route('id');
+        $userId = $this->route('user');
 
         return [
             'name' => 'sometimes|string|max:255',

@@ -38,6 +38,12 @@ Route::middleware('auth')->group(function () {
         return redirect()->route('login');
     })->name('logout');
 
+    /// Menu
+    Route::get('/categories', \App\Livewire\User\CategoryManagement::class)->name('categories');
+    Route::get('/products', \App\Livewire\User\ProductManagement::class)->name('products');
+    Route::get('/suppliers', \App\Livewire\User\SupplierManagement::class)->name('suppliers');
+
+
     // Admin routes
     Route::middleware('admin')->prefix('admin')->group(function () {
         Route::get('/users', UserManagement::class)->name('admin.users');

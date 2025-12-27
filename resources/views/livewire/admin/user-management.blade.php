@@ -25,8 +25,7 @@
         <div class="flex justify-between items-center mb-4">
             <h3 class="text-3xl font-bold text-heading">{{ $title }}</h3>
             <button wire:click="openCreateModal"
-                    class="text-white bg-brand box-border border border-transparent hover:bg-brand-strong focus:ring-4 focus:ring-brand-medium shadow-xs font-medium leading-5 rounded-base text-sm px-4 py-2.5 focus:outline-none">
-                + Tambah
+                    class="text-white bg-brand box-border border border-transparent hover:bg-brand-strong focus:ring-4 focus:ring-brand-medium shadow-xs font-medium leading-5 rounded-base text-sm px-4 py-2.5 focus:outline-none">Tambah
             </button>
         </div>
 
@@ -36,6 +35,7 @@
             <div>
                 <input wire:model.live.debounce.300ms="search"
                        type="text" id="input-group-1"
+                       name="search"
                        class="w-full px-3 py-2.5 border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body"
                        placeholder="Cari nama atau email...">
             </div>
@@ -43,6 +43,7 @@
             <div>
                 <select
                     wire:model.live="roleFilter"
+                    name="roleFilter"
                     class="w-full px-3 py-2.5 border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body"
                 >
                     <option value="">Semua Role</option>
@@ -208,6 +209,7 @@
                             </label>
                             <select
                                 wire:model="role"
+                                name="role"
                                 class="w-full px-3 py-2.5 border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body"
                             >
                                 <option value="user">User</option>
