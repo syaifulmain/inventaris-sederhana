@@ -42,6 +42,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/categories', \App\Livewire\User\CategoryManagement::class)->name('categories');
     Route::get('/products', \App\Livewire\User\ProductManagement::class)->name('products');
     Route::get('/suppliers', \App\Livewire\User\SupplierManagement::class)->name('suppliers');
+    Route::get('/stocks', \App\Livewire\User\StockManagement::class)->name('stocks');
 
 
     // Admin routes

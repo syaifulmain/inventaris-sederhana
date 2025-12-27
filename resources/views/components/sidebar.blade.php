@@ -84,6 +84,17 @@
                             <span class="ms-3">Manajemen Supplier</span>
                         </a>
                     </li>
+                    <li>
+                        <a href="{{ route('stocks') }}"
+                           class="flex items-center px-2 py-1.5 text-body rounded-base hover:bg-neutral-tertiary hover:text-fg-brand group">
+                            <svg class="w-5 h-5 transition duration-75 group-hover:text-fg-brand" aria-hidden="true"
+                                 xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="m16 10 3-3m0 0-3-3m3 3H5v3m3 4-3 3m0 0 3 3m-3-3h14v-3"/>
+                            </svg>
+                            <span class="ms-3">Manajemen Stok</span>
+                        </a>
+                    </li>
                 </ul>
             </div>
             <div class="mt-auto pt-4">
